@@ -1,0 +1,97 @@
+---
+title: "Wefunder Email Analytics"
+output: 
+  flexdashboard::flex_dashboard:
+    social: [ "twitter", "facebook", "menu" ]
+    navbar:
+      - { title: '<img src="images/logo.png" alt="Logo" height="30">', align: "left" }
+      - { title: "Visit Website", href: "https://wefunder.com/", align: "right" }
+    orientation: row
+    css: style.css
+    vertical_layout: scroll
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r library loading}
+library(tidyverse)
+library(janitor)
+library(data.table)
+library(lubridate)
+library(readxl)
+library(flexdashboard)
+```
+
+
+```{r data loading}
+df <- read_excel("email_data.xlsx", sheet = 2) %>%
+  clean_names() %>%
+  na.omit()
+```
+
+```{r}
+df_clean <- df %>%
+  select(date:cto_rate, number_companies:investments_1_day_open )
+```
+
+```{r}
+df_clean$date <- ymd(df_clean$date)
+```
+
+
+```{r}
+df_clean <- df_clean %>%
+  mutate(month = month(date, label = TRUE)) %>%
+  mutate(weekday = wday(date, label = TRUE))
+```
+
+```{r analysis}
+order_count <- df_clean %>%nrow()
+
+bug_order_count <- df_clean %>% nrow()
+bug_order_counttt <- df_clean %>% nrow()
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Order Count
+
+```{r}
+valueBox(order_count)
+```
+
+
+### Bug Order Count
+
+```{r}
+valueBox(bug_order_count,  color = "#ab1236", icon = "fa-comments")
+```
+
+### Campaign Target
+
+```{r}
+gauge(91, min = 0, max = 100, symbol = '%', gaugeSectors(
+  success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+))
+```
+
+### check
+```{r}
+valueBox(bug_order_counttt, color = "#ab2897", icon = "fa-comments")
+```
+
+### check 2
+```{r}
+valueBox(bug_order_counttt, color = "#ab2894", icon = "fa-comments")
+```
+
+
+
+Row
+-----------------------------------------------------------------------
+
+

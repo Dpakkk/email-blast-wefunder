@@ -1,0 +1,12 @@
+/* Add logo to the header */
+.logo {
+  background-image: url("images/logo.png");
+  background-repeat: no-repeat;
+  background-position: left center;
+  padding-left: 50px;
+}
+
+/* Change background color */
+body {
+  background-color: #f2f2f2;
+}
