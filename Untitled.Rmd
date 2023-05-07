@@ -4,7 +4,7 @@ output:
   flexdashboard::flex_dashboard:
     social: [ "twitter", "facebook", "menu" ]
     navbar:
-      - { title: '<img src="images/logo.png" alt="Logo" height="30">', align: "left" }
+#      - { title: '<img src="images/logo.png" alt="Logo" height="30">', align: "left" }
       - { title: "Visit Website", href: "https://wefunder.com/", align: "right" }
     orientation: row
     css: style.css
@@ -51,8 +51,24 @@ df_clean <- df_clean %>%
 ```
 
 ```{r analysis}
-order_count <- df_clean %>%nrow()
+# total email delievered 
+# average email delevered per month 
+emails_sent_per_day <- aggregate(send_size_delivered ~ date, df_clean, sum)
+avg_emails_sent_per_day <- round(mean(emails_sent_per_day$send_size_delivered), 0)
 
+# email type
+email_type <- df_clean %>%
+  pull(email_type) %>% 
+  unique() %>%         
+  length()            
+
+# total company slugs
+total_slugs <- df %>%
+  pull(company_slugs) %>% 
+  unique() %>%         
+  length()    
+
+# bug count
 bug_order_count <- df_clean %>% nrow()
 bug_order_counttt <- df_clean %>% nrow()
 ```
@@ -60,42 +76,43 @@ bug_order_counttt <- df_clean %>% nrow()
 Row
 -----------------------------------------------------------------------
 
-### Order Count
+### Email per day 
 
 ```{r}
-valueBox(order_count)
+# Create the value box for email send per day
+valueBox(avg_emails_sent_per_day, "Emails Sent Per Day", icon = "fa-envelope", color = "#2870d7")
 ```
 
 
-### Bug Order Count
+### Total email types
 
 ```{r}
-valueBox(bug_order_count,  color = "#ab1236", icon = "fa-comments")
+valueBox(email_type, "Email Type", icon = "fa-paint-roller", color = "#1389ec")
 ```
 
 ### Campaign Target
 
 ```{r}
-gauge(91, min = 0, max = 100, symbol = '%', gaugeSectors(
+gauge(56, min = 0, max = 100, symbol = '%', gaugeSectors(
   success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
 ))
 ```
 
-### check
+### Total email slugs
 ```{r}
-valueBox(bug_order_counttt, color = "#ab2897", icon = "fa-comments")
+valueBox(total_slugs, "Company Slugs", icon = "fa-briefcase", color = "#5028d7")
 ```
 
-### check 2
+### Average Investment per email
 ```{r}
-valueBox(bug_order_counttt, color = "#ab2894", icon = "fa-comments")
+valueBox(paste0("$0.03"), "Avg Investment per email", icon = "fa-dollar-sign", color = '#6e30cf')
 ```
 
 
 Row
 -----------------------------------------------------------------------
 
-### Chart A
+### Open Rate and Click Rate 
 
 ```{r}
 # Calculate average open rate and click rate
@@ -174,7 +191,7 @@ hc <- highchart() %>%
 hc  # Print the plot
 ```
 
-### Email Performanc | week days
+### Email Performance | week days
 ```{r}
 # Convert data.frame to data.table
 dt <- as.data.table(df_clean)
@@ -191,7 +208,7 @@ datatable(weekday_summary, options = list(pageLength = 10, lengthMenu = c(10, 20
 
 ```
 
-### Email types performance 
+### Email type performance 
 ```{r}
 # Convert data.frame to data.table
 dt <- as.data.table(df_clean)
