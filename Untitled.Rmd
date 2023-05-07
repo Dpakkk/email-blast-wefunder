@@ -23,6 +23,7 @@ library(data.table)
 library(lubridate)
 library(readxl)
 library(flexdashboard)
+library(highcharter)
 ```
 
 
@@ -90,8 +91,68 @@ valueBox(bug_order_counttt, color = "#ab2894", icon = "fa-comments")
 ```
 
 
+Row
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+# Calculate average open rate and click rate
+# Calculate the averages
+avg_open_rate <- mean(df_clean$open_rate)
+avg_click_rate <- mean(df_clean$click_rate)
+
+# Create the chart with two lines
+hchart(df_clean, "line", hcaes(x = date, y = open_rate), name = "Open rate") %>%
+  hc_add_series(df_clean, "line", hcaes(x = date, y = click_rate), name = "Click rate") %>%
+  
+  # Add a tooltip with percentage values and two decimal places
+  hc_tooltip(shared = TRUE, crosshairs = TRUE, valueDecimals = 2, valueSuffix = "%",
+             pointFormat = "<b>{series.name}</b>: {point.y:.2f}%<br>") %>%
+  
+  # Add a legend with custom formatting
+  hc_legend(enabled = TRUE, itemStyle = list(color = "#333333", fontWeight = "normal")) %>%
+  
+  # Customize the chart title and axis labels
+  hc_title(text = "Open and Click Rates by Date") %>%
+  hc_subtitle(text = paste0("Showing trends in email engagement over time. Average open rate: ",
+                            "<b>", format(avg_open_rate, digits = 2), "%</b>. ",
+                            "Average click rate: ", "<b>", format(avg_click_rate, digits = 2), "%</b>.")) %>%
+  hc_xAxis(title = list(text = "Date")) %>%
+  hc_yAxis(title = list(text = "Open rate Vs Click rate percentage"), labels = list(format = "{value}%")) %>%
+  
+  # Set plot options to disable animation and enable line width
+  hc_plotOptions(
+    series = list(
+      lineWidth = 2,
+      animation = FALSE
+    )
+  )
+
+```
+
 
 Row
 -----------------------------------------------------------------------
 
+### Investment volums 
+```{r}
+# calculate the correlation coefficient
+correlation <- cor(df_clean$investments_1_day, df_clean$investments_7_day)
 
+# create the chart
+hc <- highchart() %>%
+  hc_xAxis(title = list(text = "investments_1_day")) %>%
+  hc_yAxis(title = list(text = "investments_7_day")) %>%
+  hc_add_series(data = df_clean, type = "scatter", name = "Data",
+                 color = "#2f7ed8", hcaes(x = investments_1_day, y = investments_7_day)) %>%
+  hc_subtitle(text = paste0("Correlation coefficient: ", round(correlation, 2)))
+
+# display the chart
+hc
+
+```
+
+### Investment volume and Email volume
+```{r}
+```
