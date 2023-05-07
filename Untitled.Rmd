@@ -24,6 +24,7 @@ library(lubridate)
 library(readxl)
 library(flexdashboard)
 library(highcharter)
+library(DT)
 ```
 
 
@@ -131,11 +132,10 @@ hchart(df_clean, "line", hcaes(x = date, y = open_rate), name = "Open rate") %>%
 
 ```
 
-
-Row
+Row {.tabset .tabset-fade}
 -----------------------------------------------------------------------
 
-### Investment volums 
+### 1 vs 7 day investment relation
 ```{r}
 # calculate the correlation coefficient
 correlation <- cor(df_clean$investments_1_day, df_clean$investments_7_day)
@@ -155,4 +155,56 @@ hc
 
 ### Investment volume and Email volume
 ```{r}
+# Convert columns to numeric
+df_clean$volume_1_day <- as.numeric(df_clean$volume_1_day)
+df_clean$volume_7_day <- as.numeric(df_clean$volume_7_day)
+df_clean$investments_1_day <- as.numeric(df_clean$investments_1_day)
+df_clean$investments_7_day <- as.numeric(df_clean$investments_7_day)
+
+# Compute the average email volume and investment volume for each week
+weekly_data <- aggregate(cbind(volume_1_day, volume_7_day, investments_1_day, investments_7_day) ~ week, data = transform(df_clean, week = as.Date(date, "%m/%d/%y")), mean)
+
+hc <- highchart() %>%
+  hc_chart(type = "scatter") %>%
+  hc_xAxis(title = list(text = "Email Volume (7 days)")) %>%
+  hc_yAxis(title = list(text = "Investment Volume (7 days)")) %>%
+  hc_add_series(weekly_data, "scatter", hcaes(x = volume_7_day, y = investments_7_day, text = week)) %>%
+  hc_title(text = "Email Volume vs Investment Volume (7 days)") 
+
+hc  # Print the plot
 ```
+
+### Email Performanc | week days
+```{r}
+# Convert data.frame to data.table
+dt <- as.data.table(df_clean)
+
+# Calculate the average open rate, click rate and CTO rate based on weekdays
+weekday_summary <- dt[, lapply(.SD, function(x) round(mean(x), 3)), by = weekday, .SDcols = c("open_rate", "click_rate", "cto_rate")]
+
+# Set column names
+setnames(weekday_summary, c("weekday", "Avg Open Rate", "Avg Click Rate", "Avg CTO Rate"))
+
+# Display the summary table using datatable
+library(DT)
+datatable(weekday_summary, options = list(pageLength = 10, lengthMenu = c(10, 20, 30))) 
+
+```
+
+### Email types performance 
+```{r}
+# Convert data.frame to data.table
+dt <- as.data.table(df_clean)
+
+# Calculate the average open rate, click rate and CTO rate based on email type
+emailtype_summary <- dt[, lapply(.SD, function(x) round(mean(x), 3)), by = email_type, .SDcols = c("open_rate", "click_rate", "cto_rate")]
+
+# Set column names
+setnames(emailtype_summary, c("Email Type", "Avg Open Rate", "Avg Click Rate", "Avg CTO Rate"))
+
+# Display the summary table using datatable
+library(DT)
+datatable(emailtype_summary, options = list(pageLength = 10, lengthMenu = c(10, 20, 30))) 
+
+```
+
